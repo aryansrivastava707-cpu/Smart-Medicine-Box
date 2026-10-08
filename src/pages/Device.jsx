@@ -1,0 +1,16 @@
+import { BatteryCharging, Cloud, Cpu, Droplets, Radio, RefreshCw, Thermometer, Wifi } from 'lucide-react'
+import StatusBadge from '../components/StatusBadge'
+import { formatDateTime } from '../utils/helpers'
+
+export default function Device({ data, notify }) {
+  const d=data.device
+  const sync=()=>{data.simulateTelemetry();notify('Demo telemetry refreshed.')}
+  return <div>
+    <div className="page-heading"><div><span className="eyebrow">IoT device</span><h1>Device</h1><p>Connection and environmental telemetry for the Smart Medical Box.</p></div><button className="button button-secondary" onClick={sync}><RefreshCw size={16}/> Sync now</button></div>
+    <div className="device-hero card"><div className="device-hero-icon"><Cpu size={30}/></div><div className="device-hero-copy"><span className="eyebrow">Device name</span><h2>{d.name}</h2><div className="device-id">ID {d.device_id}</div></div><div className="device-status"><StatusBadge status={d.connection}/><span>Last communication {formatDateTime(d.last_sync)}</span></div></div>
+    <div className="telemetry-grid"><Telemetry icon={Wifi} label="Wi-Fi" value={d.wifi} meta="Network link"/><Telemetry icon={BatteryCharging} label="Battery" value={`${d.battery}%`} meta="Estimated level"/><Telemetry icon={Thermometer} label="Temperature" value={`${d.temperature}°C`} meta="Ambient reading"/><Telemetry icon={Droplets} label="Humidity" value={`${d.humidity}%`} meta="Ambient reading"/></div>
+    <div className="two-col"><section className="card"><div className="card-header"><div><span className="eyebrow">Firmware</span><h2>{d.firmware}</h2></div><Cloud size={20}/></div><p className="muted">This dashboard is prepared for the future ESP32 → API/Supabase telemetry path. Demo Mode values are locally simulated; account telemetry is stored per user.</p><div className="device-details"><span><b>Connection</b>{d.connection}</span><span><b>Last sync</b>{formatDateTime(d.last_sync)}</span><span><b>Data source</b>{d.demo?'Local Demo Data':'Supabase'}</span></div></section><section className="card"><div className="card-header"><div><span className="eyebrow">Hardware events</span><h2>Demo controls</h2></div><Radio size={20}/></div><div className="demo-controls"><button className="button button-primary" onClick={()=>{data.simulateCompartmentOpen(3);notify('Compartment 3 opening event simulated.','info')}}>Simulate compartment open</button><button className="button button-secondary" onClick={()=>{const log=data.simulateTaken();notify(log?'Medicine acknowledgement simulated.':'No pending demo medicine found.',log?'success':'info')}}>Simulate medicine taken</button></div></section></div>
+    <div className="architecture card"><span className="eyebrow">Integration architecture</span><div className="architecture-flow"><span>ESP32</span><b>→</b><span>Wi-Fi</span><b>→</b><span>API / Supabase</span><b>→</b><span>Dashboard</span></div><p>Expected future events: heartbeat, temperature, humidity, battery, compartment opened, medicine acknowledgement and reminder acknowledgement.</p></div>
+  </div>
+}
+function Telemetry({icon:Icon,label,value,meta}){return <div className="card telemetry"><div className="telemetry-icon"><Icon size={19}/></div><div><span>{label}</span><strong>{value}</strong><small>{meta}</small></div></div>}
